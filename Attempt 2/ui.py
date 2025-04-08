@@ -46,7 +46,7 @@ def create_solve_button():
     solve_button = QPushButton("Click to solve board")
     solve_button.setStyleSheet("font-size: 25px;"
                                "font-family: Arial;"
-                               "background-color: lightgreen;")
+                               "background-color: #c0ff8b;")
     solve_button.setFixedWidth(225)
     return solve_button
 
@@ -54,7 +54,7 @@ def create_new_board_button():
     new_board_button = QPushButton("New game")
     new_board_button.setStyleSheet("font-size: 25px;"
                                    "font-family: Arial;"
-                                   "background-color: lightblue;")
+                                   "background-color: #7cd0ff;")
     new_board_button.setFixedWidth(225)
     return new_board_button
 
@@ -62,13 +62,13 @@ def create_check_button():
     check_button = QPushButton("Check answer")
     check_button.setStyleSheet("font-size: 25px;"
                                "font-family: Arial;"
-                               "background-color: lightyellow;")
+                               "background-color: #c07bff;")
     return check_button
     
 def create_hint_slider(window):
     hint_slider = QSlider(Qt.Horizontal)
     hint_slider.setMinimum(17)
-    hint_slider.setMaximum(35)
+    hint_slider.setMaximum(40)
     hint_slider.setTickInterval(1)
     hint_slider.setTickPosition(QSlider.TicksBelow)
     hint_slider.setValue(window.hints)

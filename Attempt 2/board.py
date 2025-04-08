@@ -139,12 +139,12 @@ def check_answer(board, board_widget):
                         if user_input == str(correct_value):
                             widget.setStyleSheet("font-size: 25px;"
                                                  "font-family: Arial;"
-                                                 "background-color: lightgreen;"
+                                                 "background-color: #c0ff8b;"
                                                  "max-height: 50px;"
                                                  "max-width: 50px;")
                         else:
                             widget.setStyleSheet("font-size: 25px;"
                                                  "font-family: Arial;"
-                                                 "background-color: lightcoral;"
+                                                 "background-color: #ff737b;"
                                                  "max-height: 50px;"
                                                  "max-width: 50px;")
