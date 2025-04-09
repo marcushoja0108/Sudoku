@@ -35,6 +35,7 @@ class Board():
                 break
             print(f"🧠 Board {board_it} unsolvable, retrying...\n")
             board_it += 1
+        print(f"Solvable board created in {board_it} attempts 🧠")
     
     def solvable(self):
         import copy

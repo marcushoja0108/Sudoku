@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Sudoku Time")
-        self.setGeometry(2400, 400, 700, 900)
+        self.setGeometry(2300, 200, 700, 900)
         
         self.overlay = LoadingOverlay(self)
         
@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
         self.layout = QVBoxLayout()
 
         self.logo.setStyleSheet("qproperty-alignment: AlignCenter;")
+        self.logo.setFixedHeight(100)
         self.logo.setFont(self.logo_font)
      
         self.buttons.setFixedHeight(200)
