@@ -1,4 +1,6 @@
-﻿from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
+﻿import os
+import random
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QMovie
 
@@ -8,15 +10,13 @@ class LoadingOverlay(QWidget):
         self.backdrop = QWidget(self)
         self.backdrop.setStyleSheet("Background-color: rgba(255, 255, 255, 200);")
         self.backdrop.lower()
-        # self.setStyleSheet("Background-color: rgba(255, 255, 255, 200);")
         
         self.movie_label = QLabel(self)
-        self.movie = QMovie("Attempt 2/assets/loading_cube.gif")
+        self.movie = self.load_random_meme("Attempt 2/assets/meme")
         self.movie_label.setMovie(self.movie)
         self.movie_label.setAlignment(Qt.AlignCenter)
         self.movie.start()
         self.movie.setScaledSize(QSize(200, 200))
-        
         
         label = QLabel("🧠 Generating board...")
         label.setAlignment(Qt.AlignCenter)
@@ -35,6 +35,14 @@ class LoadingOverlay(QWidget):
         self.setGeometry(0, 0, self.width(), self.height())
         self.hide()
         
+        
+    def load_random_meme(self, folder_path):
+        gif_files = [m for m in os.listdir(folder_path)]
+        if not gif_files:
+            raise FileNotFoundError("No gif file found")
+        selected_gif = random.choice(gif_files)
+        return QMovie(os.path.join(folder_path, selected_gif))
+    
     def resizeEvent(self, event):
         if self.parent():
             self.setGeometry(0, 0, self.parent().width(), self.parent().height())
@@ -42,6 +50,15 @@ class LoadingOverlay(QWidget):
         super().resizeEvent(event)
     
     def show_overlay(self):
+        if self.movie:
+            self.movie.stop()
+            self.movie_label.clear()
+            
+        self.movie = self.load_random_meme("Attempt 2/assets/meme")
+        self.movie.setScaledSize(QSize(300, 300))
+        self.movie_label.setMovie(self.movie)
+        self.movie.start()
+        
         self.show()
         self.raise_()
         

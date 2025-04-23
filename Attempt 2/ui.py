@@ -1,5 +1,7 @@
 ﻿from board import *
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QFrame, QVBoxLayout, QSlider, QLabel, QLineEdit
+from OCR import *
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QPushButton, QFrame, 
+                             QVBoxLayout, QSlider, QLabel, QLineEdit, QFileDialog)
 from PyQt5.QtCore import Qt
 
 def create_board(board):
@@ -75,12 +77,29 @@ def create_hint_slider(window):
     hint_slider.setTickPosition(QSlider.TicksBelow)
     hint_slider.setValue(window.hints)
     return hint_slider
+
+def create_load_board_button():
+    load_board = QPushButton("Load board from photo")
+    load_board.setStyleSheet("font-size: 25px;"
+                             "font-family: Arial;"
+                             "background-color: red;")
+    load_board.setFixedWidth(225)
+    return load_board
     
-    
+def create_confirm_board_button():
+    confirm_button = QPushButton("Confirm Board")
+    confirm_button.setStyleSheet("font-size: 25px;"
+                                 "font-family: Arial;"
+                                 "background-color: orange;")
+    confirm_button.setFixedWidth(225)
+    return confirm_button
+
 def create_buttons(window):
     buttons = QWidget()
     layout = QVBoxLayout()
     new_board = create_new_board_button()
+    load_board = create_load_board_button()
+    confirm_loaded = create_confirm_board_button()
     check = create_check_button()
     solve = create_solve_button()
     hint_slider = create_hint_slider(window)
@@ -101,10 +120,14 @@ def create_buttons(window):
     solve.clicked.connect(lambda: solve_board(window.board, window.board_widget))
     check.clicked.connect(lambda: check_answer(window.board, window.board_widget))
     new_board.clicked.connect(window.new_game)
+    load_board.clicked.connect(lambda: upload_and_process_image(window))
+    confirm_loaded.clicked.connect(lambda: confirm_loaded_board(window))
     
     layout.addWidget(hint_label, alignment=(Qt.AlignCenter))
     layout.addWidget(hint_slider)
     layout.addWidget(new_board, alignment=(Qt.AlignCenter))
+    layout.addWidget(load_board, alignment=(Qt.AlignCenter))
+    layout.addWidget(confirm_loaded, alignment=(Qt.AlignCenter))
     layout.addWidget(check, alignment=(Qt.AlignCenter))
     layout.addWidget(solve, alignment=(Qt.AlignCenter))
     buttons.setLayout(layout)
@@ -143,3 +166,55 @@ def update_board(board, board_widget):
                     number = box.slots[slot_row][slot_col]
                     btn = frame_layout.itemAtPosition(slot_row, slot_col).widget()
                     btn.setText(str(number))
+
+def upload_and_process_image(window):
+    file_path, _ = QFileDialog.getOpenFileName(None, "Select Sudoku Image", "", "Images (*.png *.jpg * .jpeg)")
+    if file_path:
+        ocr_slots = run_ocr(file_path)
+        if ocr_slots:
+            board = Board.from_ocr(ocr_slots)
+            window.board = board
+            window.layout.removeWidget(window.board_widget)
+            window.board_widget.setParent(None)
+            
+            window.board_widget = create_board(board)
+            window.layout.insertWidget(1, window.board_widget)
+            
+def confirm_loaded_board(window):
+    layout = window.board_widget.layout()
+    for box_row in range(3):
+        for box_col in range(3):
+            box = window.board.boxes[box_row][box_col]
+            frame = layout.itemAtPosition(box_row, box_col).widget()
+            frame_layout = frame.layout()
+            
+            for slot_row in range(3):
+                for slot_col in range(3):
+                    widget = frame_layout.itemAtPosition(slot_row, slot_col).widget()
+                    
+                    val = ''
+                    if isinstance(widget, QLineEdit):
+                        text = widget.text().strip()
+                        if text.isdigit():
+                            val = text
+                    elif isinstance(widget, QLabel):
+                        text = widget.text().strip()
+                        if text.isdigit():
+                            val = text
+                    
+                    box.slots[slot_row][slot_col] = val
+                    box.given[slot_row][slot_col] = bool(val)
+    print("\n🧾 Confirmed Custom Board (9x9):")
+    for box_row in range(3):
+        for slot_row in range(3):
+            row = []
+            for box_col in range(3):
+                row.extend(window.board.boxes[box_row][box_col].slots[slot_row])
+            print(" ".join(cell if cell != '' else '.' for cell in row))                
+            
+    window.layout.removeWidget(window.board_widget)
+    window.board_widget.setParent(None)
+    
+    window.board_widget = create_board(window.board)
+    window.layout.insertWidget(1, window.board_widget)
+                    

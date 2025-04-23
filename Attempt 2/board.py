@@ -37,6 +37,17 @@ class Board():
             board_it += 1
         print(f"Solvable board created in {board_it} attempts 🧠")
     
+    @classmethod
+    def from_ocr(cls, nested_board):
+        board = cls(hints=0)
+        for box_row in range(3):
+            for box_col in range(3):
+                for slot_row in range(3):
+                    for slot_col in range(3):
+                        value = nested_board[box_row][box_col][slot_row][slot_col]
+                        if value != '':
+                            board.boxes[box_row][box_col].slots[slot_row][slot_col] = value
+        return board
     def solvable(self):
         import copy
         board_copy = copy.deepcopy(self)
@@ -68,7 +79,7 @@ class Board():
         
         for num in sorted(possible_values):
             if self.valid(num, box_row, box_col, slot_row, slot_col):           #sjekk om det er lov
-                self.boxes[box_row][box_col].slots[slot_row][slot_col] = num
+                self.boxes[box_row][box_col].slots[slot_row][slot_col] = str(num)
                 
                 if self.solve():                                                #sjekker om brettet fortsatt er korrekt
                     return True                                                 #gå til neste slot
@@ -102,28 +113,50 @@ class Board():
  
                             
     def valid(self, number, box_row, box_col, slot_row, slot_col):
-        # check for box
-        if number in [num for row in self.boxes[box_row][box_col].slots for num in row]:
-            # print(f"❌ {number} already in box ({box_row}, {box_col})")                  #debug
-            return False
-        #check for row
-
-        for col in range(3):
-            if number in [self.boxes[box_row][col].slots[slot_row][c] for c in range(3)]:
-                # print(f"❌ {number} already in row {slot_row}")                          #debug
+        full_row = box_row * 3 + slot_row
+        full_col = box_col * 3 + slot_col
+        
+        #Check all rows
+        for col in range(9):
+            b_col, s_col = divmod(col, 3)
+            if self.boxes[box_row][b_col].slots[slot_row][s_col] == str(number):
                 return False
-
-        #check for column
-        for row in range(3):
-            if number in [self.boxes[row][box_col].slots[r][slot_col] for r in range(3)]:
-                # print(f"❌ {number} already in column {slot_col}")                       #debug
+        
+        #Check all columns
+        for row in range(9):
+            b_row, s_row = divmod(row, 3)
+            if self.boxes[b_row][box_col].slots[s_row][slot_col] == str(number):
                 return False
+        
+        #Check box
+        for r in range(3):
+            for c in range(3):
+                if self.boxes[box_row][box_col].slots[r][c] == str(number):
+                    return False
+        
+        #Is valid
         return True
+        
+        # # check for box
+        # if number in [num for row in self.boxes[box_row][box_col].slots for num in row]:
+        #     # print(f"❌ {number} already in box ({box_row}, {box_col})")                  #debug
+        #     return False
+        # #check for row
+        # for col in range(3):
+        #     if number in [self.boxes[box_row][col].slots[slot_row][c] for c in range(3)]:
+        #         # print(f"❌ {number} already in row {slot_row}")                          #debug
+        #         return False
+        # 
+        # #check for column
+        # for row in range(3):
+        #     if number in [self.boxes[row][box_col].slots[r][slot_col] for r in range(3)]:
+        #         # print(f"❌ {number} already in column {slot_col}")                       #debug
+        #         return False
+        # return True
 
 def check_answer(board, board_widget):
     layout = board_widget.layout()
     board.solve()
-    
     for box_row in range(3):
         for box_col in range(3):
             box = board.boxes[box_row][box_col]
