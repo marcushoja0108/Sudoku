@@ -3,6 +3,8 @@ import random
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QMovie
+from PyQt5.QtCore import QThread, pyqtSignal
+from OCR import *
 
 class LoadingOverlay(QWidget):
     def __init__(self, parent=None):
@@ -64,3 +66,12 @@ class LoadingOverlay(QWidget):
         
     def hide_overlay(self):
         self.hide()
+
+class OCRThread(QThread):
+    ocr_done = pyqtSignal(object)
+    def __init__(self, file_path):
+        super().__init__()
+        self.file_path = file_path
+    def run(self):
+        ocr_slots = run_ocr(self.file_path)
+        self.ocr_done.emit(ocr_slots)

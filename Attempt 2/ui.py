@@ -1,9 +1,23 @@
 ﻿from board import *
 from OCR import *
-from PyQt5.QtWidgets import (QWidget, QGridLayout, QPushButton, QFrame, 
-                             QVBoxLayout, QSlider, QLabel, QLineEdit, QFileDialog)
-from PyQt5.QtCore import Qt
+from utility import *
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QPushButton, QFrame,
+                             QVBoxLayout, QSlider, QLabel, QLineEdit, QFileDialog, QHBoxLayout)
+from PyQt5.QtCore import Qt, pyqtSignal, QThread
 
+
+def finish_ocr(window, ocr_slots):
+    if ocr_slots:
+        board = Board.from_ocr(ocr_slots)
+        window.board = board
+        window.layout.removeWidget(window.board_widget)
+        window.board_widget.setParent(None)
+    
+        window.board_widget = create_board(board)
+        window.layout.insertWidget(1, window.board_widget)
+        window.confirm_button.show()
+    window.overlay.hide_overlay()
+    
 def create_board(board):
     widget = QWidget()
     layout = QGridLayout()
@@ -46,26 +60,56 @@ def create_board(board):
     return widget
 
 def create_solve_button():
-    solve_button = QPushButton("Click to solve board")
-    solve_button.setStyleSheet("font-size: 25px;"
-                               "font-family: Arial;"
-                               "background-color: #c0ff8b;")
+    solve_button = QPushButton("Solve board")
+    solve_button.setStyleSheet("""
+       QPushButton {
+           font-size: 22px;
+           font-family: Arial;
+           padding: 10px 20px;
+           border-radius: 8px;
+           color: white;
+           background-color: #0071bd;
+       }
+       QPushButton:hover {
+            background-color: #0099ff;
+       }
+    """)
     solve_button.setFixedWidth(225)
     return solve_button
 
 def create_new_board_button():
     new_board_button = QPushButton("New game")
-    new_board_button.setStyleSheet("font-size: 25px;"
-                                   "font-family: Arial;"
-                                   "background-color: #7cd0ff;")
+    new_board_button.setStyleSheet("""
+       QPushButton {
+           font-size: 22px;
+           font-family: Arial;
+           padding: 10px 20px;
+           border-radius: 8px;
+           color: white;
+           background-color: #05bf02;
+       }
+       QPushButton:hover {
+            background-color: #07fa02;
+       }
+    """)
     new_board_button.setFixedWidth(225)
     return new_board_button
 
 def create_check_button():
     check_button = QPushButton("Check answer")
-    check_button.setStyleSheet("font-size: 25px;"
-                               "font-family: Arial;"
-                               "background-color: #c07bff;")
+    check_button.setStyleSheet("""
+       QPushButton {
+           font-size: 22px;
+           font-family: Arial;
+           padding: 10px 20px;
+           border-radius: 8px;
+           color: white;
+           background-color: #6f00c4;
+       }
+       QPushButton:hover {
+            background-color: #9000ff;
+       }
+    """)
     check_button.setFixedWidth(225)
     return check_button
     
@@ -79,58 +123,96 @@ def create_hint_slider(window):
     return hint_slider
 
 def create_load_board_button():
-    load_board = QPushButton("Load board from photo")
-    load_board.setStyleSheet("font-size: 25px;"
-                             "font-family: Arial;"
-                             "background-color: red;")
+    load_board = QPushButton("Load board")
+    load_board.setStyleSheet("""
+       QPushButton {
+           font-size: 22px;
+           font-family: Arial;
+           padding: 10px 20px;
+           border-radius: 8px;
+           color: white;
+           background-color: #c9a500;
+       }
+       QPushButton:hover {
+            background-color: #ffd000;
+       }
+    """)
     load_board.setFixedWidth(225)
     return load_board
     
 def create_confirm_board_button():
     confirm_button = QPushButton("Confirm Board")
-    confirm_button.setStyleSheet("font-size: 25px;"
-                                 "font-family: Arial;"
-                                 "background-color: orange;")
+    confirm_button.setStyleSheet("""
+       QPushButton {
+           font-size: 22px;
+           font-family: Arial;
+           padding: 10px 20px;
+           border-radius: 8px;
+           color: white;
+           background-color: #d10000;
+       }
+       QPushButton:hover {
+            background-color: #ff0000;
+       }
+    """)
     confirm_button.setFixedWidth(225)
     return confirm_button
 
 def create_buttons(window):
     buttons = QWidget()
-    layout = QVBoxLayout()
+    main_layout = QVBoxLayout()
+    
+    #Game controls
+    controls_layout = QHBoxLayout()
     new_board = create_new_board_button()
     load_board = create_load_board_button()
     confirm_loaded = create_confirm_board_button()
-    check = create_check_button()
-    solve = create_solve_button()
-    hint_slider = create_hint_slider(window)
+    confirm_loaded.hide()
+    window.confirm_button = confirm_loaded
     
+    controls_layout.addWidget(new_board)
+    controls_layout.addWidget(load_board)
+    controls_layout.addWidget(confirm_loaded)
+    
+    #hint slider
+    hint_slider = create_hint_slider(window)
     hint_label = QLabel()
     def update_hint_label(value):
         if value >= 35:
-            hint_label.setText(f"Hints: {hint_slider.value()} - Board creation may take som time")
+            hint_label.setText(f"Hints: {hint_slider.value()} - May take som time")
         else:
             hint_label.setText(f"Hints: {hint_slider.value()}")
     
     update_hint_label(hint_slider.value())
-    hint_label.setStyleSheet("font-size: 25px;"
+    hint_label.setStyleSheet("font-size: 22px;"
                           "font-family: Arial;")
     
     hint_slider.valueChanged.connect(update_hint_label)
     hint_slider.valueChanged.connect(window.update_hints)
+    
+    hint_layout = QVBoxLayout()
+    hint_layout.addWidget(hint_label, alignment=(Qt.AlignCenter))
+    hint_layout.addWidget(hint_slider)
+    
+    #Action buttons
+    actions_layout = QHBoxLayout()
+    solve = create_solve_button()
+    check = create_check_button()
+    actions_layout.addWidget(check)
+    actions_layout.addWidget(solve)
+    
+    #Connect
     solve.clicked.connect(lambda: solve_board(window.board, window.board_widget))
     check.clicked.connect(lambda: check_answer(window.board, window.board_widget))
     new_board.clicked.connect(window.new_game)
     load_board.clicked.connect(lambda: upload_and_process_image(window))
     confirm_loaded.clicked.connect(lambda: confirm_loaded_board(window))
     
-    layout.addWidget(hint_label, alignment=(Qt.AlignCenter))
-    layout.addWidget(hint_slider)
-    layout.addWidget(new_board, alignment=(Qt.AlignCenter))
-    layout.addWidget(load_board, alignment=(Qt.AlignCenter))
-    layout.addWidget(confirm_loaded, alignment=(Qt.AlignCenter))
-    layout.addWidget(check, alignment=(Qt.AlignCenter))
-    layout.addWidget(solve, alignment=(Qt.AlignCenter))
-    buttons.setLayout(layout)
+    #Full layout
+    main_layout.addLayout(controls_layout)
+    main_layout.addLayout(hint_layout)
+    main_layout.addLayout(actions_layout)
+    buttons.setLayout(main_layout)
     
     return buttons
 
@@ -170,16 +252,11 @@ def update_board(board, board_widget):
 def upload_and_process_image(window):
     file_path, _ = QFileDialog.getOpenFileName(None, "Select Sudoku Image", "", "Images (*.png *.jpg * .jpeg)")
     if file_path:
-        ocr_slots = run_ocr(file_path)
-        if ocr_slots:
-            board = Board.from_ocr(ocr_slots)
-            window.board = board
-            window.layout.removeWidget(window.board_widget)
-            window.board_widget.setParent(None)
-            
-            window.board_widget = create_board(board)
-            window.layout.insertWidget(1, window.board_widget)
-            
+        window.overlay.show_overlay()
+        window.ocr_thread = OCRThread(file_path)
+        window.ocr_thread.ocr_done.connect(lambda ocr_slots: finish_ocr(window, ocr_slots))
+        window.ocr_thread.start()
+
 def confirm_loaded_board(window):
     layout = window.board_widget.layout()
     for box_row in range(3):
@@ -217,4 +294,5 @@ def confirm_loaded_board(window):
     
     window.board_widget = create_board(window.board)
     window.layout.insertWidget(1, window.board_widget)
+    window.confirm_button.hide()
                     

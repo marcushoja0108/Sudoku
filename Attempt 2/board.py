@@ -105,12 +105,11 @@ class Board():
 
                 for num in numbers:
                     if self.valid(num, box_row, box_col, slot_row, slot_col):
-                        box.slots[slot_row][slot_col] = num
+                        box.slots[slot_row][slot_col] = str(num)
                         box.given[slot_row][slot_col] = True                        #plasserer hint i map
                         board_hints -= 1
                         break
         
- 
                             
     def valid(self, number, box_row, box_col, slot_row, slot_col):
         full_row = box_row * 3 + slot_row
@@ -136,23 +135,6 @@ class Board():
         
         #Is valid
         return True
-        
-        # # check for box
-        # if number in [num for row in self.boxes[box_row][box_col].slots for num in row]:
-        #     # print(f"❌ {number} already in box ({box_row}, {box_col})")                  #debug
-        #     return False
-        # #check for row
-        # for col in range(3):
-        #     if number in [self.boxes[box_row][col].slots[slot_row][c] for c in range(3)]:
-        #         # print(f"❌ {number} already in row {slot_row}")                          #debug
-        #         return False
-        # 
-        # #check for column
-        # for row in range(3):
-        #     if number in [self.boxes[row][box_col].slots[r][slot_col] for r in range(3)]:
-        #         # print(f"❌ {number} already in column {slot_col}")                       #debug
-        #         return False
-        # return True
 
 def check_answer(board, board_widget):
     layout = board_widget.layout()

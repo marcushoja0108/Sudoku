@@ -1,0 +1,10 @@
+﻿average scores of OCR
+93.42%      base + brightness 2 + thresh(adaptive)
+92.18%      base + brightness 2.5
+90.95%      base
+90.95%      base + brightness 1.5   very even scores
+90.12%      base + brightness 3
+
+
+81.48%      base + brightness + thresh(OTSU + adaptive)
+79.84%      base + brightness + thresh(OTSU)

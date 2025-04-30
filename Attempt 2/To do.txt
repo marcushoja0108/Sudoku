@@ -1,0 +1,3 @@
+﻿1. refactor into folders to organize code   #rider error gives red underlines when refactoring
+2. improve ui.      #not hot pink and Curlz
+3. improve OCR accuracy. Look at pre-processing.
