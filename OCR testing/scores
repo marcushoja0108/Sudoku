@@ -1,10 +1,29 @@
 ﻿average scores of OCR
+3 test boards
+
 93.42%      base + brightness 2 + thresh(adaptive)
+92.18%      base + brightness 2 + thresh(adaptive) + 200x200 size
 92.18%      base + brightness 2.5
 90.95%      base
 90.95%      base + brightness 1.5   very even scores
+90.95%      base + brightness 2 + thresh(adaptive) + 150x150 size
+90.12%      base + brightness 2 + thresh(adaptive) + sharpen + size 200
 90.12%      base + brightness 3
-
-
+90.12%      base + brightness 2 + thresh(adaptive) + sharpen + size 150
+87.65%      base + brightness 2 + thresh(adaptive) + sharpen
 81.48%      base + brightness + thresh(OTSU + adaptive)
 79.84%      base + brightness + thresh(OTSU)
+
+
+
+6 test boards
+
+92.39%      base + brightness 2.5 + thresh(adaptive) + morph(open)
+92.39%      base + brightness 2.5 + thresh(adaptive) + morph(open) - dilate
+92.39%      base + brightness 2.5 + thresh(adaptive)
+91.77%      base + brightness 2.5 + thresh(adaptive) + sharpen     very even scores
+91.56%      base + brightness 2.5 + thresh(OTSU, 0, 255)
+90.95%      base + brightness 2 + thresh(adaptive)
+89.30%      base + brightness 2 + thresh(adaptive) + size 200
+88.27%      base + brightness 2 + thresh(adaptive)
+87.65%      base + brightness 2 + thresh(adaptive) + size 150
