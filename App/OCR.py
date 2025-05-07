@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 
 def run_ocr(image_path):
-    # image_path = "OCR testing/OCR demo.PNG"
     img = cv2.imread(image_path)
 
     #Preprocessing
@@ -14,13 +13,10 @@ def run_ocr(image_path):
     #Grayscale
     gray = cv2.cvtColor(brightened, cv2.COLOR_BGR2GRAY)
 
-    # gray = cv2.filter2D(gray, -1, kernel_sharp)
-
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
 
     #Threshold
     thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-    # _, thresh = cv2.threshold(blurred, 240, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     inverted = cv2.bitwise_not(thresh)
 
@@ -33,7 +29,6 @@ def run_ocr(image_path):
     kernel_sharp = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
     sharpened = cv2.filter2D(contrast, -1, kernel_sharp)
 
-    # split into grid
     height, width = sharpened.shape
     cell_h, cell_w = height // 9, width // 9
 
@@ -66,6 +61,7 @@ def run_ocr(image_path):
                 row.append('')
         board.append(row)
         
+    #Convert to correct board format
     nested_board = [[[['' for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
     for i in range(9):
         for j in range(9):
@@ -73,8 +69,4 @@ def run_ocr(image_path):
             box_row, box_col = i // 3, j // 3
             cell_row, cell_col = i % 3, j % 3
             nested_board[box_row][box_col][cell_row][cell_col] = value
-
-    print("\n🧾 OCR Flat Board (9x9):")
-    for row in board:
-        print(" ".join(str(cell) if cell != '' else '.' for cell in row))
     return nested_board

@@ -1,9 +1,8 @@
 ﻿from board import *
-from OCR import *
 from utility import *
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QPushButton, QFrame,
                              QVBoxLayout, QSlider, QLabel, QLineEdit, QFileDialog, QHBoxLayout)
-from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtCore import Qt
 
 
 def finish_ocr(window, ocr_slots):
@@ -16,6 +15,8 @@ def finish_ocr(window, ocr_slots):
         window.board_widget = create_board(board)
         window.layout.insertWidget(1, window.board_widget)
         window.confirm_button.show()
+        window.solve_button.hide()
+        window.check_button.hide()
     window.overlay.hide_overlay()
     
 def create_board(board):
@@ -166,13 +167,9 @@ def create_buttons(window):
     controls_layout = QHBoxLayout()
     new_board = create_new_board_button()
     load_board = create_load_board_button()
-    confirm_loaded = create_confirm_board_button()
-    confirm_loaded.hide()
-    window.confirm_button = confirm_loaded
-    
+
     controls_layout.addWidget(new_board)
     controls_layout.addWidget(load_board)
-    controls_layout.addWidget(confirm_loaded)
     
     #hint slider
     hint_slider = create_hint_slider(window)
@@ -197,21 +194,30 @@ def create_buttons(window):
     #Action buttons
     actions_layout = QHBoxLayout()
     solve = create_solve_button()
+    solve.show()
     check = create_check_button()
+    check.show()
+    confirm_loaded = create_confirm_board_button()
+    confirm_loaded.hide()
+    window.confirm_button = confirm_loaded
+    window.solve_button = solve
+    window.check_button = check
+
+    actions_layout.addWidget(confirm_loaded)
     actions_layout.addWidget(check)
     actions_layout.addWidget(solve)
     
     #Connect
-    solve.clicked.connect(lambda: solve_board(window.board, window.board_widget))
+    solve.clicked.connect(lambda: solve_board(window.board, window.board_widget, window))
     check.clicked.connect(lambda: check_answer(window.board, window.board_widget))
     new_board.clicked.connect(window.new_game)
     load_board.clicked.connect(lambda: upload_and_process_image(window))
     confirm_loaded.clicked.connect(lambda: confirm_loaded_board(window))
     
     #Full layout
-    main_layout.addLayout(controls_layout)
-    main_layout.addLayout(hint_layout)
     main_layout.addLayout(actions_layout)
+    main_layout.addLayout(hint_layout)
+    main_layout.addLayout(controls_layout)
     buttons.setLayout(main_layout)
     
     return buttons
@@ -227,12 +233,15 @@ def print_board(self):
         if box_row < 2:
             print("-" * 21)  # Separate 3x3 sections
             
-def solve_board(board, board_widget):
+def solve_board(board, board_widget, window):
     if board.solve():
+        window.error_label.hide()
         update_board(board, board_widget)
         check_answer(board, board_widget)
     else:
-        print("Brain damage")
+        window.error_label.setText("Could not solve board.")
+        window.error_label.show()
+        print("Brain damage, could not solve board.")
 
 def update_board(board, board_widget):
     layout = board_widget.layout()
@@ -250,6 +259,7 @@ def update_board(board, board_widget):
                     btn.setText(str(number))
 
 def upload_and_process_image(window):
+    window.error_label.hide()
     file_path, _ = QFileDialog.getOpenFileName(None, "Select Sudoku Image", "", "Images (*.png *.jpg * .jpeg)")
     if file_path:
         window.overlay.show_overlay()
@@ -281,14 +291,16 @@ def confirm_loaded_board(window):
                     
                     box.slots[slot_row][slot_col] = val
                     box.given[slot_row][slot_col] = bool(val)
-    print("\n🧾 Confirmed Custom Board (9x9):")
-    for box_row in range(3):
-        for slot_row in range(3):
-            row = []
-            for box_col in range(3):
-                row.extend(window.board.boxes[box_row][box_col].slots[slot_row])
-            print(" ".join(cell if cell != '' else '.' for cell in row))                
-            
+    window.solve_button.show()
+    window.check_button.show()
+    
+    if not window.board.board_is_valid():
+        window.error_label.setText("Board unsolvable")
+        window.error_label.show()
+        return  # Abort confirmation, don't reload board
+    else:
+        window.error_label.hide()
+    
     window.layout.removeWidget(window.board_widget)
     window.board_widget.setParent(None)
     

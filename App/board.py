@@ -1,8 +1,5 @@
 ﻿from random import randint, shuffle
-
-from PIL.ImageFont import Layout
 from PyQt5.QtWidgets import QLineEdit
-
 
 class Box():
     def __init__(self, box_id):
@@ -10,10 +7,9 @@ class Box():
         self.slots = [['', '', ''], 
                  ['', '', ''], 
                  ['', '', '']]
-        self.given = [[False, False, False],        #map over hint
+        self.given = [[False, False, False],        #Map of hints
                       [False, False, False],
                       [False, False, False]]
-
         
 class Board():
     def __init__(self, hints):
@@ -27,7 +23,7 @@ class Board():
             box_id = 1
             for row in range(3):
                 for column in range(3):
-                    self.boxes[row][column] = Box(box_id)    #må lage korrekt id
+                    self.boxes[row][column] = Box(box_id)
                     box_id += 1
                     
             self.fill_board()
@@ -62,7 +58,7 @@ class Board():
                 box = self.boxes[box_row][box_col]
                 for slot_row in range(3):
                     for slot_col in range(3):
-                        if box.slots[slot_row][slot_col] == '':                          #sjekk tom slot
+                        if box.slots[slot_row][slot_col] == '':                          #Check for empty slot
                             possible_values = [num for num in range(1, 10) if self.valid(num, box_row, box_col, slot_row, slot_col)]
                             if len(possible_values) < min_options:
                                 min_options = len(possible_values)
@@ -72,21 +68,20 @@ class Board():
     def solve(self):
         empty = self.find_empty_cell()
         if not empty:
-            return True                                                         #hvis alle slots er fulle er brettet løst
+            return True                                                         #If all slots full, board is solved
 
         box_row, box_col, slot_row, slot_col, possible_values = empty
         shuffle(possible_values)
         
         for num in sorted(possible_values):
-            if self.valid(num, box_row, box_col, slot_row, slot_col):           #sjekk om det er lov
+            if self.valid(num, box_row, box_col, slot_row, slot_col):           #Check if valid
                 self.boxes[box_row][box_col].slots[slot_row][slot_col] = str(num)
                 
-                if self.solve():                                                #sjekker om brettet fortsatt er korrekt
-                    return True                                                 #gå til neste slot
+                if self.solve():                                                
+                    return True                                                 #Check if solved
 
-                self.boxes[box_row][box_col].slots[slot_row][slot_col] = ''     #backtrack: hvis det blir feil på neste fjernes forrige
-                
-        return False                                                            #sender til backtrack hvis alle tall er prøvd                                                                  
+                self.boxes[box_row][box_col].slots[slot_row][slot_col] = ''     #Backtrack: if error, remove previous and retry                
+        return False                                                                                                                              
 
     def fill_board(self):
         board_hints = self.hints
@@ -106,7 +101,7 @@ class Board():
                 for num in numbers:
                     if self.valid(num, box_row, box_col, slot_row, slot_col):
                         box.slots[slot_row][slot_col] = str(num)
-                        box.given[slot_row][slot_col] = True                        #plasserer hint i map
+                        box.given[slot_row][slot_col] = True                        #Places hint in map
                         board_hints -= 1
                         break
         
@@ -134,6 +129,43 @@ class Board():
                     return False
         
         #Is valid
+        return True
+
+    def board_is_valid(self):
+        def no_duplicates(numbers):
+            nums = [n for n in numbers if n != '']
+            return len(nums) == len(set(nums))
+    
+        #check rows
+        for row in range(9):
+            numbers = []
+            for col in range(9):
+                b_row, s_row = divmod(row, 3)
+                b_col, s_col = divmod(col, 3)
+                num = self.boxes[b_row][b_col].slots[s_row][s_col]
+                numbers.append(num)
+            if not no_duplicates(numbers):
+                return False
+        #check columns
+        for col in range(9):
+            numbers = []
+            for row in range(9):
+                b_row, s_row = divmod(row, 3)
+                b_col, s_col = divmod(col, 3)
+                num = self.boxes[b_row][b_col].slots[s_row][s_col]
+                numbers.append(num)
+            if not no_duplicates(numbers):
+                return False
+        #check boxes
+        for box_row in range(3):
+            for box_col in range(3):
+                numbers = []
+                for slot_row in range(3):
+                    for slot_col in range(3):
+                        num = self.boxes[box_row][box_col].slots[slot_row][slot_col]
+                        numbers.append(num)
+                if not no_duplicates(numbers):
+                    return False
         return True
 
 def check_answer(board, board_widget):
@@ -164,3 +196,4 @@ def check_answer(board, board_widget):
                                                  "background-color: #ff737b;"
                                                  "max-height: 50px;"
                                                  "max-width: 50px;")
+                            

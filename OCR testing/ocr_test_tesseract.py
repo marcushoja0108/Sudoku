@@ -1,6 +1,5 @@
 ﻿import numpy as np
 import pytesseract
-from PIL import Image, ImageEnhance
 import cv2
 
 tests = [
@@ -89,14 +88,11 @@ def ocr_sudoku_board(image_path):
     #Grayscale
     gray = cv2.cvtColor(brightened, cv2.COLOR_BGR2GRAY)
 
-    # gray = cv2.filter2D(gray, -1, kernel_sharp)
-
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
 
     #Threshold
     thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-    # _, thresh = cv2.threshold(blurred, 240, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
+ 
     inverted = cv2.bitwise_not(thresh)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))

@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QMovie
 from PyQt5.QtCore import QThread, pyqtSignal
+
 from OCR import *
 
 class LoadingOverlay(QWidget):
@@ -14,7 +15,7 @@ class LoadingOverlay(QWidget):
         self.backdrop.lower()
         
         self.movie_label = QLabel(self)
-        self.movie = self.load_random_meme("Attempt 2/assets/meme")
+        self.movie = self.load_random_meme("App/assets/meme")
         self.movie_label.setMovie(self.movie)
         self.movie_label.setAlignment(Qt.AlignCenter)
         self.movie.start()
@@ -45,10 +46,13 @@ class LoadingOverlay(QWidget):
         selected_gif = random.choice(gif_files)
         return QMovie(os.path.join(folder_path, selected_gif))
     
-    def resizeEvent(self, event):
+    def update_geometry(self):
         if self.parent():
             self.setGeometry(0, 0, self.parent().width(), self.parent().height())
             self.backdrop.setGeometry(0, 0, self.parent().width(), self.parent().height())
+    
+    def resizeEvent(self, event):
+        self.update_geometry()
         super().resizeEvent(event)
     
     def show_overlay(self):
@@ -56,10 +60,12 @@ class LoadingOverlay(QWidget):
             self.movie.stop()
             self.movie_label.clear()
             
-        self.movie = self.load_random_meme("Attempt 2/assets/meme")
+        self.movie = self.load_random_meme("App/assets/meme")
         self.movie.setScaledSize(QSize(300, 300))
         self.movie_label.setMovie(self.movie)
         self.movie.start()
+        
+        self.update_geometry()
         
         self.show()
         self.raise_()
