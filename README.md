@@ -4,7 +4,7 @@
 **Sudoku Time** is a desktop Sudoku app that lets you generate custom Sudoku boards with your preferred number of hints (pre-filled numbers).  
 Solve the board yourself, check your answer, or let the app solve it automatically.  
 You can even upload screenshots of Sudoku puzzles — like from *sudoku.com* — and solve them instantly.
-![Sudoku Time Launch](App/assets/app_screenshot.PNG)
+<img src="App/assets/app_screenshot.PNG" alt="Sudoku Time Launch" width="600"/>
 
 ## ✨ Features
 
